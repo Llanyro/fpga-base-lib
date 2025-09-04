@@ -23,31 +23,33 @@ entity UniversalAsynchonousTransmitter3 is
 end entity UniversalAsynchonousTransmitter3;
 
 architecture UniversalAsynchonousTransmitter3Arch of UniversalAsynchonousTransmitter3 is
+	signal counter			: NAT range 0 to TICKS_PER_BIT			:= 0;	-- Current tick
 	
 begin
 	process(tick_source)
-		variable counter	: NAT range 0 to TICKS_PER_BIT			:= 0;	-- Current tick
 		variable index		: NAT range 0 to MAX_BUS_SIZE			:= 0;	-- Position of bit to get
 
 	begin
-		if rst = '1' then
-		elsif rising_edge(tick_source) then
-			if data_valid = '0' then			-- No data to send, nothing to do
+		if rst = '1' then						-- Reset all
+			index			:= 0;
+			counter			<= 0;
+			active			<= '0';
+		elsif rising_edge(tick_source) then		-- Cycle function
+			if data_valid = '0' then			-- No data to send, nothing to do (reset all)
 				index		:= 0;
-				counter		:= 0;
+				counter		<= 0;
 				active		<= '0';
-
 			elsif counter = 0 then				-- First tick
 				active		<= '1';				-- Tell user we are working
 				data_out	<= data(index);		-- Send data
-				counter		:= counter + 1;		-- Continue doing ticks
+				counter		<= counter + 1;		-- Continue doing ticks
 				index		:= index + 1;		-- Advance index
 			elsif counter = TICKS_PER_BIT then	-- Max ticks reached
-				counter		:= 0;				-- Reset counter
+				counter		<= 0;				-- Reset counter
 				if index = bits_to_send then	-- This bit was the last one to send
-					active		<= '0';			-- Tell user we are no longer working
+					active	<= '0';				-- Tell user we are no longer working
 				end if;
-			else counter	:= counter + 1;		-- Continue doing ticks
+			else counter	<= counter + 1;		-- Continue doing ticks
 			end if;
 		end if;
 	end process;

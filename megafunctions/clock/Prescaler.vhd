@@ -9,25 +9,24 @@ use llanylib.LlanySettings.all;
 
 entity ClockPrescaler is
 	generic (
-		INPUT_FREQ_HZ	: NAT	:= 100_000_000;  -- Default: 100 MHz
-		OUTPUT_FREQ_HZ	: NAT	:= 1_000;        -- Default: 1 kHz
-		DUTY_CYCLE		: FLOAT	:= 0.5           -- Range 0.0 to 1.0 (50%)
+		INPUT_FREQ_HZ		: NAT							:= 100_000_000;										-- Default: 100 MHz
+		OUTPUT_FREQ_HZ		: NAT							:= 1_000;											-- Default: 1 kHz
+		DUTY_CYCLE			: FLOAT							:= 0.5												-- Range 0.0 to 1.0 (50%)
 	);
 	port (
-		clk_in			: in  std_logic;
-		rst				: in  std_logic;
-		clk_out			: out std_logic
+		clk_in				: in	std_logic;																	-- Clock source
+		rst					: in	std_logic;																	-- Module reset
+		clk_out				: out	std_logic																	-- Clock prescaled
 	);
 end entity ClockPrescaler;
 
 architecture behavioral of ClockPrescaler is
-	-- Calculate number of clock cycles per output period
-	constant CLK_DIVIDER : integer := INPUT_FREQ_HZ / OUTPUT_FREQ_HZ;
-	-- Calculate number of cycles for high phase
-	constant HIGH_CYCLES : integer := integer(round(real(CLK_DIVIDER) * DUTY_CYCLE));
-	constant LOW_CYCLES  : integer := CLK_DIVIDER - HIGH_CYCLES;
+	constant CLK_DIVIDER	: NAT							:= INPUT_FREQ_HZ / OUTPUT_FREQ_HZ;					-- Calculate number of clock cycles per output period
+	constant CLK_DIVIDER_L	: NAT							:= CLK_DIVIDER - 1;									-- 
+	constant HIGH_CYCLES	: NAT							:= integer(round(real(CLK_DIVIDER) * DUTY_CYCLE));	-- Calculate number of cycles for high phase
+	constant LOW_CYCLES		: NAT							:= CLK_DIVIDER - HIGH_CYCLES;
 	
-	signal counter : integer range 0 to CLK_DIVIDER-1 := 0;
+	signal counter			: NAT range 0 to CLK_DIVIDER-1	:= 0;
 	signal output_reg : std_logic := '0';
 begin
 	assert (OUTPUT_FREQ_HZ <= INPUT_FREQ_HZ)
@@ -40,23 +39,20 @@ begin
 	process(clk_in, rst)
 	begin
 		if rst = '1' then
-			counter <= 0;
-			output_reg <= '0';
+			counter			<= 0;
+			output_reg		<= '0';
 		elsif rising_edge(clk_in) then
-			if counter < CLK_DIVIDER-1 then
-				counter <= counter + 1;
-			else
-				counter <= 0;
+			if counter < CLK_DIVIDER_L then
+				counter		<= counter + 1;
+			else counter	<= 0;
 			end if;
 			
-			-- Control duty cycle
-			if counter < HIGH_CYCLES then
-				output_reg <= '1';
-			else
-				output_reg <= '0';
+			output_reg		<= '0';
+			if counter < HIGH_CYCLES then		-- Control duty cycle
+				output_reg	<= '1';
 			end if;
 		end if;
 	end process;
 
-	clk_out <= output_reg;
+	clk_out					<= output_reg;
 end architecture behavioral;
