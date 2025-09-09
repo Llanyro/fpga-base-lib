@@ -54,8 +54,9 @@ package LlanySettings is
 	type 	SLV2x1		is array	(1		to		1) of SLV2;
 	type 	SLV2x2		is array	(1		to		2) of SLV2;
 	
-	function get_required_width(n : NAT) return NAT;
-	function has_odd_ones(vec : SLV) return SL;
+	function get_required_width(n : NAT)	return NAT;
+	function has_odd_ones(vec : SLV)		return SL;
+	--procedure zero_set_if_1(s : inout SL)	return SL;
 
 end package LlanySettings;
 
@@ -75,6 +76,12 @@ package body LlanySettings is
 		end loop;
 		return parity;
 	end function has_odd_ones;
+
+	--procedure zero_set_if_1(s : SL)			is
+	--begin
+	--	if s = '1' then
+	--
+	--end procedure zero_set_if_1;
 
 	--procedure proc_do_something(input_a : in integer range 0 to c_argument_max, output_b : out integer range 0 to c_argument_max) is
 	--begin
